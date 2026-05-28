@@ -597,6 +597,156 @@ td {
   animation: successPulse 0.6s ease;
 }
 
+.payment-warning {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-left: 4px solid #f39c12;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 1.5rem 0;
+  text-align: left;
+}
+
+.payment-warning p {
+  margin: 0.5rem 0;
+  color: #856404;
+}
+
+.payment-warning p:first-child {
+  margin-top: 0;
+  font-weight: 600;
+}
+
+.payment-warning p:last-child {
+  margin-bottom: 0;
+  font-size: 0.9rem;
+}
+
+/* Dark mode warning styling */
+:root[data-theme="dark"] .payment-warning {
+  background: #3d2f1a;
+  border: 1px solid #8b6914;
+  border-left-color: #f39c12;
+  color: #ffeaa7;
+}
+
+:root[data-theme="dark"] .payment-warning p {
+  color: #ffeaa7;
+}
+
+/* Top Sellers Section */
+.top-sellers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.top-seller-card {
+  position: relative;
+  background: var(--bg);
+  border: 2px solid var(--brand);
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.top-seller-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+}
+
+.top-seller-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+  color: white;
+  padding: 0.3rem 0.8rem;
+  border-radius: 2rem;
+  font-size: 0.8rem;
+  font-weight: bold;
+  z-index: 10;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.top-seller-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.top-seller-info {
+  padding: 1.5rem;
+}
+
+.top-seller-info h3 {
+  margin: 0.5rem 0;
+  color: var(--text);
+}
+
+.top-seller-info p {
+  color: var(--muted);
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+}
+
+.top-seller-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1rem 0;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.sold-count {
+  background: var(--brand-soft);
+  color: var(--brand);
+  padding: 0.3rem 0.6rem;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.top-seller-info .price {
+  font-weight: bold;
+  color: var(--brand);
+  font-size: 1.1rem;
+}
+
+/* Dark mode adjustments */
+:root[data-theme="dark"] .top-seller-card {
+  background: #0d3d2b;
+  border-color: var(--brand);
+}
+
+:root[data-theme="dark"] .top-seller-card:hover {
+  box-shadow: 0 8px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .top-sellers-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .top-seller-card img {
+    height: 150px;
+  }
+  
+  .top-seller-info {
+    padding: 1rem;
+  }
+}
+
 .spinner {
   width: 40px;
   height: 40px;
@@ -1249,5 +1399,97 @@ td {
   .admin-hero-actions {
     flex-direction: column;
     align-items: center;
+  }
+}
+
+/* Modal Styles */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: var(--bg);
+  border-radius: 1rem;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-header h2 {
+  margin: 0;
+  color: var(--text);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--muted);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  background: var(--border);
+  color: var(--text);
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.verification-code-display {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.code-box {
+  background: var(--brand-soft);
+  border: 2px solid var(--brand);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 1rem 0;
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--brand);
+  letter-spacing: 0.2em;
+  font-family: monospace;
+}
+
+.code-instruction {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+    margin: 1rem;
+  }
+  
+  .code-box {
+    font-size: 1.5rem;
   }
 }

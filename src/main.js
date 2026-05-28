@@ -37,6 +37,40 @@ function pageHome() {
 }
 
 function pageMarketplace() {
+  // Calculate top sellers from order data
+  const localOrders = load("eco_orders", []);
+  const cloudOrders = load("eco_cloud_orders", []);
+  const allOrders = [...localOrders, ...cloudOrders];
+  
+  const productSales = {};
+  allOrders.forEach(order => {
+    const items = order.items || [];
+    items.forEach(item => {
+      const productName = item.name || 'Unknown Product';
+      const qty = item.qty || 0;
+      if (!productSales[productName]) {
+        productSales[productName] = {
+          name: productName,
+          quantity: 0
+        };
+      }
+      productSales[productName].quantity += qty;
+    });
+  });
+  
+  // Find top sellers (handle ties)
+  const sortedProducts = Object.values(productSales)
+    .sort((a, b) => b.quantity - a.quantity);
+  
+  const topSellers = sortedProducts.length > 0 
+    ? sortedProducts.filter(p => p.quantity === sortedProducts[0].quantity)
+    : [];
+  
+  // Get actual product objects for top sellers
+  const topSellerProducts = topSellers
+    .map(seller => state.products.find(p => p.name === seller.name))
+    .filter(p => p); // Remove undefined products
+  
   return `
     <section class="card">
       <h1>Marketplace</h1>
@@ -45,6 +79,32 @@ function pageMarketplace() {
         <p>Browse certified recycled-material goods and validate community interest through purchases and reviews.</p>
       </div>
     </section>
+    
+    ${topSellerProducts.length > 0 ? `
+      <section class="card">
+        <h2>🏆 Top Best Sellers</h2>
+        <p class="muted">Most popular products chosen by our eco-conscious community</p>
+        <div class="top-sellers-grid">
+          ${topSellerProducts.map(product => `
+            <div class="top-seller-card">
+              <div class="top-seller-badge">🔥 HOT</div>
+              <img src="${product.image}" alt="${product.name}" loading="lazy" referrerpolicy="no-referrer" data-fallback="true" />
+              <div class="top-seller-info">
+                <p class="eyebrow">${product.category} by ${product.seller}</p>
+                <h3>${product.name}</h3>
+                <p>${product.desc}</p>
+                <div class="top-seller-stats">
+                  <span class="sold-count">${productSales[product.name]?.quantity || 0} sold</span>
+                  <span class="price">${currency(product.price)}</span>
+                </div>
+                <button class="btn" data-action="add-cart" data-id="${product.id}">Add to Cart</button>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      </section>
+    ` : ""}
+    
     ${cards(state.products)}
   `;
 }
@@ -152,9 +212,9 @@ function pageAuth(mode) {
     <section class="card narrow">
       <h1>${mode === "register" ? "Create Account" : "Login"}</h1>
       <form id="${mode}-form" class="stack" autocomplete="off">
-        ${mode === "register" ? `<label>Name<input name="name" required autocomplete="off" /></label>` : ""}
-        <label>Email<input type="text" name="email" required autocomplete="off" /></label>
-        <label>Password<input type="password" name="password" required minlength="6" autocomplete="new-password" /></label>
+        ${mode === "register" ? `<label>Name<input id="${mode}-name" name="name" required autocomplete="off" /></label>` : ""}
+        <label>Email<input id="${mode}-email" type="text" name="email" required autocomplete="off" /></label>
+        <label>Password<input id="${mode}-password" type="password" name="password" required minlength="6" autocomplete="new-password" /></label>
         <button class="btn" type="submit">${mode === "register" ? "Register Securely" : "Login Securely"}</button>
       </form>
       <p>${mode === "register" ? 'Already have an account? <a href="#/login">Login</a>' : 'No account yet? <a href="#/register">Register</a>'}</p>
@@ -171,6 +231,11 @@ function pagePaymentProcessing() {
         </div>
         <h1>Processing Payment</h1>
         <p class="muted">Please wait while we securely process your payment...</p>
+        
+        <div class="payment-warning">
+          <p>⚠️ <strong>Important:</strong> Please do not close this window or navigate away until payment is complete.</p>
+          <p>Interrupting the process may cause payment issues.</p>
+        </div>
         
         <div class="payment-steps">
           <div class="step active" id="step1">
@@ -258,8 +323,8 @@ function pageLogin() {
         <div id="user-login-form" class="login-form" style="display: none;">
           <h4>User Login</h4>
           <form id="login-form" class="stack" autocomplete="off">
-            <label>Email<input type="text" name="email" required autocomplete="off" /></label>
-            <label>Password<input type="password" name="password" required minlength="6" autocomplete="new-password" /></label>
+            <label>Email<input id="login-email" type="text" name="email" required autocomplete="off" /></label>
+            <label>Password<input id="login-password" type="password" name="password" required minlength="6" autocomplete="new-password" /></label>
             <button class="btn" type="submit">Login as User</button>
           </form>
           <div class="form-footer">
@@ -308,6 +373,32 @@ function pageLogin() {
         </div>
       </div>
     </section>
+    
+    <!-- Verification Code Modal -->
+    <div id="verification-modal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>🔐 Verification Code Sent</h2>
+          <button class="modal-close" onclick="window.closeVerificationModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="verification-code-display">
+            <p class="muted">Your verification code is:</p>
+            <div class="code-box">
+              <span id="modal-verification-code"></span>
+            </div>
+            <p class="code-instruction">Enter this code in the form below to reset your password</p>
+          </div>
+          
+          <form id="modal-verify-form" class="stack">
+            <label>Verification Code<input type="text" name="code" required placeholder="Enter 6-digit code" maxlength="6" /></label>
+            <label>New Password<input type="password" name="newPassword" required minlength="6" /></label>
+            <label>Confirm New Password<input type="password" name="confirmPassword" required minlength="6" /></label>
+            <button class="btn" type="submit">Reset Password</button>
+          </form>
+        </div>
+      </div>
+    </div>
   `;
 }
 
@@ -788,6 +879,12 @@ function pageAdmin() {
 }
 
 function render() {
+  // Store active element before render
+  const activeElement = document.activeElement;
+  const elementId = activeElement?.id;
+  const elementValue = activeElement?.value;
+  const elementName = activeElement?.name;
+  
   document.documentElement.dataset.theme = state.theme;
   const route = getRoute();
   let page = "";
@@ -824,6 +921,22 @@ function render() {
     app.innerHTML = `${nav()}<main>${page}</main>${footer()}`;
   }
   bindImageFallbacks();
+  
+  // Restore focus after render
+  setTimeout(() => {
+    if (elementId && elementValue !== undefined) {
+      const restoredElement = document.getElementById(elementId) || 
+                             document.querySelector(`[name="${elementName}"]`);
+      if (restoredElement && restoredElement.value !== undefined) {
+        restoredElement.focus();
+        // Restore cursor position
+        if (restoredElement.setSelectionRange) {
+          const len = restoredElement.value.length;
+          restoredElement.setSelectionRange(len, len);
+        }
+      }
+    }
+  }, 0);
 }
 
 function bindImageFallbacks() {
@@ -1094,6 +1207,10 @@ document.addEventListener("submit", async (event) => {
       const result = await loginUserFromSupabase(email, pwd);
       if (result.error) {
         console.log("Supabase login failed:", result.error);
+        // Check if user doesn't exist vs wrong password
+        if (result.error.includes("No rows") || result.error.includes("not found")) {
+          return alert("User not found. Please check your email or register.");
+        }
         // Fallback to local login
       } else {
         // Success - set current user and store credentials
@@ -1106,8 +1223,16 @@ document.addEventListener("submit", async (event) => {
     }
     
     // Fallback to local login
+    const existingUser = state.users.find((u) => u.email === email);
+    if (!existingUser) {
+      return alert("User not found. Please check your email or register.");
+    }
+    
     const user = state.users.find((u) => u.email === email && u.passwordHash === pwd);
-    if (!user) return alert("Incorrect password.");
+    if (!user) {
+      return alert("Incorrect password. Please try again.");
+    }
+    
     state.currentUser = { name: user.name, email: user.email };
     storeUserCredentials(email, pwd);
     persist();
@@ -1250,6 +1375,35 @@ document.addEventListener("submit", async (event) => {
       return;
     }
     
+    // Check if user exists (try Supabase first, then local)
+    let userExists = false;
+    
+    if (cloud.enabled && cloud.client) {
+      try {
+        const { data: userData, error } = await cloud.client
+          .from("users")
+          .select("email")
+          .eq("email", email)
+          .single();
+        if (!error && userData) {
+          userExists = true;
+        }
+      } catch (e) {
+        // Fallback to local check
+      }
+    }
+    
+    // Fallback to local check
+    if (!userExists) {
+      const localUser = state.users.find((u) => u.email === email);
+      userExists = !!localUser;
+    }
+    
+    if (!userExists) {
+      alert("User not found. Please check your email or register first.");
+      return;
+    }
+    
     // Generate fake verification code
     const verificationCode = window.generateVerificationCode();
     
@@ -1257,9 +1411,8 @@ document.addEventListener("submit", async (event) => {
     window.tempVerificationCode = verificationCode;
     window.tempEmail = email;
     
-    alert(`Verification code sent to ${email}! (For demo: code is ${verificationCode})`);
-    
-    // Hide forgot password form and show verification form
+    // Show modal with verification code
+    window.showVerificationModal(verificationCode);
     const forgotContainer = document.querySelector('#forgot-password-container');
     const verifyForm = document.querySelector('#verify-code-form');
     
@@ -1305,6 +1458,64 @@ document.addEventListener("submit", async (event) => {
     
     // Go back to user login
     window.backToUserLogin();
+  }
+
+  if (event.target.id === "modal-verify-form") {
+    event.preventDefault();
+    const data = new FormData(event.target);
+    const code = String(data.get("code") || "").trim();
+    const newPassword = String(data.get("newPassword") || "");
+    const confirmPassword = String(data.get("confirmPassword") || "");
+    
+    if (!code || !newPassword || !confirmPassword) {
+      alert("Please fill in all fields.");
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      alert("Passwords do not match.");
+      return;
+    }
+    
+    if (code !== window.tempVerificationCode) {
+      alert("Invalid verification code.");
+      return;
+    }
+    
+    // Find user and update password (check both local and Supabase)
+    let user = state.users.find((u) => u.email === window.tempEmail);
+    
+    if (user) {
+      // Update local user
+      user.passwordHash = hash(newPassword);
+      persist();
+    }
+    
+    // Also update in Supabase if available
+    if (cloud.enabled && cloud.client) {
+      try {
+        const { error } = await cloud.client
+          .from("users")
+          .update({ passwordHash: hash(newPassword) })
+          .eq("email", window.tempEmail);
+        if (error) {
+          console.log("Supabase password update error:", error);
+        }
+      } catch (e) {
+        console.log("Supabase password update failed:", e);
+      }
+    }
+    
+    alert("Password reset successfully! You can now login with your new password.");
+    
+    // Clear temporary data and close modal
+    window.tempVerificationCode = null;
+    window.tempEmail = null;
+    window.closeVerificationModal();
+    
+    // Show login form
+    const userForm = document.querySelector('#user-login-form');
+    if (userForm) userForm.style.display = 'block';
   }
 
   if (event.target.id === "community-form") {
@@ -1510,6 +1721,25 @@ window.backToUserLogin = function() {
   if (userForm) userForm.style.display = 'block';
   if (forgotContainer) forgotContainer.style.display = 'none';
   if (verifyForm) verifyForm.style.display = 'none';
+};
+
+// Global function for showing verification modal
+window.showVerificationModal = function(verificationCode) {
+  const modal = document.querySelector('#verification-modal');
+  const codeSpan = document.querySelector('#modal-verification-code');
+  
+  if (modal && codeSpan) {
+    codeSpan.textContent = verificationCode;
+    modal.style.display = 'flex';
+  }
+};
+
+// Global function for closing verification modal
+window.closeVerificationModal = function() {
+  const modal = document.querySelector('#verification-modal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
 };
 
 window.printReceipt = function() {
@@ -1982,9 +2212,13 @@ window.printMonthlyReport = () => {
     });
   });
   
-  const bestSeller = Object.values(productSales)
-    .sort((a, b) => b.quantity - a.quantity)
-    .slice(0, 1)[0];
+  // Find all products with the highest quantity (handle ties)
+  const sortedProducts = Object.values(productSales)
+    .sort((a, b) => b.quantity - a.quantity);
+  
+  const bestSellers = sortedProducts.length > 0 
+    ? sortedProducts.filter(p => p.quantity === sortedProducts[0].quantity)
+    : [];
   
   const monthName = new Date(year, month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   
@@ -2041,9 +2275,9 @@ window.printMonthlyReport = () => {
         <table>
           <thead><tr><th>Product</th><th>Units Sold</th><th>Revenue</th></tr></thead>
           <tbody>
-            ${bestSeller ? `
-              <tr><td>${bestSeller.name}</td><td>${bestSeller.quantity}</td><td>${currency(bestSeller.revenue)}</td></tr>
-            ` : "<tr><td colspan='3'>No sales data available</td></tr>"}
+            ${bestSellers.length > 0 ? bestSellers.map(seller => `
+              <tr><td>${seller.name}</td><td>${seller.quantity}</td><td>${currency(seller.revenue)}</td></tr>
+            `).join("") : "<tr><td colspan='3'>No sales data available</td></tr>"}
           </tbody>
         </table>
         
@@ -2293,9 +2527,13 @@ function pageAdminOrders() {
     });
   });
   
-  const bestSeller = Object.values(productSales)
-    .sort((a, b) => b.quantity - a.quantity)
-    .slice(0, 1)[0];
+  // Find all products with the highest quantity (handle ties)
+  const sortedProducts = Object.values(productSales)
+    .sort((a, b) => b.quantity - a.quantity);
+  
+  const bestSellers = sortedProducts.length > 0 
+    ? sortedProducts.filter(p => p.quantity === sortedProducts[0].quantity)
+    : [];
   
   return `
     ${adminNav()}
@@ -2343,13 +2581,13 @@ function pageAdminOrders() {
                 <tr><th>Product</th><th>Units Sold</th><th>Revenue</th></tr>
               </thead>
               <tbody>
-                ${bestSeller ? `
+                ${bestSellers.length > 0 ? bestSellers.map(seller => `
                   <tr>
-                    <td>${bestSeller.name}</td>
-                    <td>${bestSeller.quantity}</td>
-                    <td>${currency(bestSeller.revenue)}</td>
+                    <td>${seller.name}</td>
+                    <td>${seller.quantity}</td>
+                    <td>${currency(seller.revenue)}</td>
                   </tr>
-                ` : "<tr><td colspan='3'>No sales data available yet</td></tr>"}
+                `).join("") : "<tr><td colspan='3'>No sales data available yet</td></tr>"}
               </tbody>
             </table>
           </div>

@@ -6,6 +6,6 @@ export const defaultProducts = [
   { id: "p3", name: "Cork Composite Laptop Stand", price: 79, stock: 22, category: "Work", seller: "RenewLab", image: "https://5.imimg.com/data5/SELLER/Default/2025/12/571543928/XY/UP/MJ/168145/minimalist-office-workspace-with-natural-accents-1000x1000.png", desc: "Lightweight ergonomic stand with biodegradable composite finish." },
   { id: "p4", name: "Upcycled Rubber Sneaker", price: 189, stock: 11, category: "Fashion", seller: "Stride Green", image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=1200&q=80", desc: "Street-ready sneakers from repurposed tire and textile waste." },
   { id: "p5", name: "Compostable Food Container Set", price: 39, stock: 40, category: "Kitchen", seller: "BioPack KL", image: "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=1200&q=80", desc: "Durable, plant-based containers with leak-resistant sealing." },
-  { id: "p6", name: "Reclaimed Wood Phone Dock", price: 59, stock: 17, category: "Tech", seller: "Second Grain", image: "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcT2tSFD0lm6hB9utnHsMh9pgpq4BDDLjF7KtAdPUgGe9kIJmwgrDGTwrERRaTzt-46OiBQKHbgvB4Dby3xqMR7EsGbCG_sr", desc: "Minimal desktop dock carved from reclaimed tropical timber." }
+  { id: "p6", name: "Reclaimed Wood Phone Dock", price: 59, stock: 17, category: "Tech", seller: "Second Grain", image: "https://m.media-amazon.com/images/I/812DO43oipL.jpg", desc: "Minimal desktop dock carved from reclaimed tropical timber." }
 ];
 
