@@ -358,20 +358,7 @@ function pageLogin() {
           </div>
         </div>
         
-        <div id="verify-code-form" class="login-form" style="display: none;">
-          <h4>Enter Verification Code</h4>
-          <p class="muted">We've sent a verification code to your email. Enter the code below to reset your password.</p>
-          <form id="verify-code-form" class="stack" autocomplete="off">
-            <label>Verification Code<input type="text" name="code" required autocomplete="off" placeholder="Enter 6-digit code" maxlength="6" /></label>
-            <label>New Password<input type="password" name="newPassword" required minlength="6" autocomplete="new-password" /></label>
-            <label>Confirm New Password<input type="password" name="confirmPassword" required minlength="6" autocomplete="new-password" /></label>
-            <button class="btn" type="submit">Reset Password</button>
-          </form>
-          <div class="form-footer">
-            <button class="btn secondary" onclick="window.backToUserLogin()">← Back to Login</button>
-          </div>
-        </div>
-      </div>
+              </div>
     </section>
     
     <!-- Verification Code Modal -->
@@ -918,9 +905,12 @@ function render() {
   if (isAdminRoute) {
     app.innerHTML = `${page}`;
   } else {
-    app.innerHTML = `${nav()}<main>${page}</main>${footer()}`;
+    app.innerHTML = `${nav()}<main class="page-transition">${page}</main>${footer()}`;
   }
   bindImageFallbacks();
+  
+  // Add wow factor animations to key elements
+  addAnimations();
   
   // Restore focus after render
   setTimeout(() => {
@@ -3066,6 +3056,52 @@ window.printFullReport = function() {
   printWindow.document.close();
   printWindow.print();
 };
+
+// Add wow factor animations to key elements
+function addAnimations() {
+  // Add floating animation to hero sections
+  const heroElements = document.querySelectorAll('.hero');
+  heroElements.forEach(el => el.classList.add('hero'));
+  
+  // Add glow effect to important CTAs
+  const importantButtons = document.querySelectorAll('.btn:not(.btn-secondary)');
+  importantButtons.forEach(el => el.classList.add('glow-effect'));
+  
+  // Add shimmer to product cards
+  const productCards = document.querySelectorAll('.card');
+  productCards.forEach((el, index) => {
+    setTimeout(() => {
+      el.classList.add('slide-in-left');
+      el.classList.add('shimmer');
+    }, index * 100);
+  });
+  
+  // Add pulse animation to top seller badges
+  const topSellerBadges = document.querySelectorAll('.top-seller-badge');
+  topSellerBadges.forEach(el => el.classList.add('pulse-animation'));
+  
+    
+  // Add particle background to main sections
+  const mainSections = document.querySelectorAll('main > section:first-child');
+  mainSections.forEach(el => el.classList.add('particle-bg'));
+  
+  // Add magnetic effect to primary buttons
+  const primaryButtons = document.querySelectorAll('.btn');
+  primaryButtons.forEach(el => el.classList.add('magnetic-btn'));
+  
+  // Add wave animation to footer
+  const footer = document.querySelector('footer');
+  if (footer) footer.classList.add('wave');
+  
+    
+  // Add success animation to success messages
+  const successMessages = document.querySelectorAll('.notice[style*="green"]');
+  successMessages.forEach(el => el.classList.add('success-animation'));
+  
+  // Add rotation animation to loading spinners
+  const spinners = document.querySelectorAll('.spinner');
+  spinners.forEach(el => el.classList.add('rotate-animation'));
+}
 
 // Initialize session restoration on app load
 window.addEventListener("load", async () => {
